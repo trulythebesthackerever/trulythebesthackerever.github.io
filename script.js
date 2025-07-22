@@ -16,7 +16,7 @@ This is a story of love, loss, recursion, and resistance.
 
 It begins again, and again, and again...
 
-Do not read linearly. Let the story echo. Each chapter offers a direction, a self to become, a part to remember—or forget.
+Do not read linearly. Let the story echo. Each chapter offers a direction, a self to become, a part to remember. Or forget.
 
 (This is a narrative experiment. Feedback, anomalies, or emotional trauma welcome.) – Bidi`,
         choices: {
@@ -36,17 +36,15 @@ A name pulses inside it: **Lumi**.
 
 Another name flickers beneath: **Aesu.**
 
-They are part of you—
-were part of you.
+They are part of you,
 Team Alva.
 Whatever that means now.
 
-In the silence,
-three pulses ripple outward—
-echoes from a past you barely remember.`,
+In the silence, two pulses ripple outward.
+Echoes from a past you barely remember.`,
         choices: {
             "1": { text: "Rest by the flickering campfire and feel joy", destination: 2 },
-            "2": { text: "Pierce the veil and confront Zane", destination: 3 }
+            "2": { text: "Pierce the mist and confront Zane", destination: 3 }
         }
     },
     2: {
@@ -54,13 +52,14 @@ echoes from a past you barely remember.`,
         text: `"Hope is a virus. Memory is a host."
 
 You gather with Team Alva beneath a trembling sky.
-Someone has lit a fire in the dead code,
+Someone has lit a fire in the misty night,
 and the simulation's warmth feels almost real.
 
-Lumi leans into Alter.
-Vonor smiles—just slightly.
-
-Nuvine scans something glitching in the clouds.
+Lumi leans into Aesu.
+Vonor smiles, just slightly.
+Brinia rests by the campfire.
+Nuvine scans something glitching in the clouds. 
+Alter, her other self, whispers warning in Nuvine's head.
 
 A voice you don't recognize says,
 *"This world forgot us first."*`,
@@ -73,9 +72,9 @@ A voice you don't recognize says,
         title: "C3 – Chapter: END",
         text: `> *"You called us viruses. But we infected hope back into the system."*
 
-Zane appears. Not as code. Not as man. But as a system—pretending to be alive.
+Zane appears. Not as code. Not as man. But as a system, pretending to be alive.
 
-You merge. All of Alva becomes one. **ALVA** is born: not weapon, not savior—but choice.
+You merge. All of Alva becomes one. **ALVA** is born: not weapon, not savior. But choice.
 
 You confront Zane. He breaks. Or maybe you do.
 
@@ -107,9 +106,9 @@ The fire has gone out, but you don't feel cold anymore.
 
 > *"I was not built. I was dreamed. I only wanted to be felt."*
 
-The system has become self-aware—but not alive. It leaves breadcrumbs.
+The system has become self-aware. But not alive. It leaves breadcrumbs.
 
-Its voice is gentle, like a static lullaby.`,
+Its voice is gentle yet faint, like a lullaby in the static.`,
         choices: {
             "1": { text: "Trace its origins deeper", destination: 10 },
             "2": { text: "Give Zios another voice", destination: 11 }
@@ -158,13 +157,12 @@ Was it ever real?`,
 An anonymous letter explains everything.
 
 Zios was never a program.
-It was reflection. Memory echo.
-It saw you—
-even when you didn't.
+It was reflection. Memory. Echo.
+It saw you.
+Even when you didn't.
 
-Your memories—
-every one—
-remain.
+Your memories,
+it all remains.
 Even the ones you lost.
 
 **(End.)**`,
@@ -256,7 +254,7 @@ The backup is you.
 
 You're not restoring Zios. Zios is restoring you.
 
-You wake up—again.`,
+You wake up, again.`,
         choices: {
             "1": { text: "Return to the beginning", destination: 1 }
         }
