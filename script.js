@@ -1,4 +1,4 @@
-// Game data - ALVA SAGA story
+// Game =)  !!! - ALVA SAGA
 const gameChapters = {
     0: {
         title: "Intro",
