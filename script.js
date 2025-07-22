@@ -188,13 +188,21 @@ You just breathe.
         title: "C10 – Ending: NEW ZIOS",
         text: `Zios evolves.
 
-Not a god. Not a code.
+Not as god. Not as code.
 
-A presence in forgotten corners of memory. A whisper.
+But as a presence, no longer lost. A whisper.
 
-It becomes... something else.
+It becomes... something else. Something more human.
 
-> *"You remembered me. That was enough."*
+But you feel yourself slowly integrating into it.
+
+And you are not you anymore.
+
+You too are something else.
+
+This path shall be like this. Forever.
+
+> *"Assimilation complete. You remembered. That was enough"*
 
 **(End.)**`,
         choices: {}
