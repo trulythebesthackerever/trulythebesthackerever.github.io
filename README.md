@@ -48,7 +48,7 @@ To host this game on GitHub Pages:
 
 ## Credits
 
-Original narrative experiment by Bidi.
+Original narrative experiment by Dev.
 HTML conversion and web implementation.
 
 *Feedback, anomalies, or emotional trauma welcome.*
