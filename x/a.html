@@ -723,12 +723,12 @@
                 poison: 0
             };
             
-            addLog(`Starting game with difficulty ${difficulty}`, 'info');
+            addLog(`Starting game - Survive ${difficulty} wave${difficulty > 1 ? 's' : ''} to win!`, 'info');
             startLevel();
         }
 
         function startLevel() {
-            addLog(`=== Level ${gameState.currentLevel} ===`, 'info');
+            addLog(`=== Wave ${gameState.currentLevel}/${gameState.maxLevel} ===`, 'info');
             
             // Build deck
             gameState.battleDeck = [];
@@ -1006,7 +1006,7 @@
         }
 
         function levelComplete() {
-            addLog('=== LEVEL COMPLETE! ===', 'heal');
+            addLog(`=== WAVE ${gameState.currentLevel} COMPLETE! ===`, 'heal');
             if (gameState.currentLevel >= gameState.maxLevel) {
                 gameOver(true);
             } else {
@@ -1110,8 +1110,8 @@
         }
 
         function updateBattleUI() {
-            // Update turn indicator
-            document.getElementById('turn-indicator').textContent = `Turn ${gameState.turn}`;
+            // Update turn indicator with wave info
+            document.getElementById('turn-indicator').textContent = `Wave ${gameState.currentLevel}/${gameState.maxLevel} - Turn ${gameState.turn}`;
             
             // Update health text and bar
             document.getElementById('health-text').textContent = `${gameState.player.health}/${gameState.player.maxHealth} HP`;
