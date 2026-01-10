@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Fighter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6); }
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        /* Menu Styles */
+        .menu-option {
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+            border: 3px solid #4a4a6a;
+            padding: 25px;
+            margin: 15px 0;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-size: 1.2em;
+        }
+
+        .menu-option:hover {
+            background: linear-gradient(135deg, #3a3a5a 0%, #2a2a4a 100%);
+            border-color: #ffd700;
+            transform: translateX(10px) scale(1.02);
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Battle Layout */
+        .battle-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 180px);
+        }
+
+        .battle-main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .battle-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: linear-gradient(135deg, #1a1a3a 0%, #2a2a4a 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4a4a6a;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .turn-indicator {
+            font-size: 1.5em;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .health-bar {
+            background: #1a1a1a;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 2px solid #4a4a6a;
+            position: relative;
+        }
+
+        .health-fill {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 1em;
+            text-shadow: 1px 1px 2px #000;
+            z-index: 1;
+        }
+
+        .mana-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .mana-text {
+            font-weight: bold;
+            color: #5dade2;
+            min-width: 80px;
+        }
+
+        .mana-orbs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .mana-orb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
+            box-shadow: 0 0 15px rgba(93, 173, 226, 0.8), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            border: 2px solid #3498db;
+        }
+
+        .mana-orb.empty {
+            background: #1a1a2a;
+            box-shadow: none;
+            border: 2px solid #2a2a4a;
+        }
+
+        /* Enemies */
+        .enemies-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .enemies-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .enemies-container::-webkit-scrollbar-track {
+            background: #1a1a2a;
+            border-radius: 10px;
+        }
+
+        .enemies-container::-webkit-scrollbar-thumb {
+            background: #4a4a6a;
+            border-radius: 10px;
+        }
+
+        .enemy {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.3) 0%, rgba(100, 0, 0, 0.3) 100%);
+            border: 3px solid #8b0000;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .enemy:hover {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.5) 0%, rgba(100, 0, 0, 0.5) 100%);
+            transform: scale(1.03);
+            box-shadow: 0 5px 30px rgba(139, 0, 0, 0.5);
+        }
+
+        .enemy-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+
+        .enemy-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+            font-size: 1em;
+        }
+
+        /* Hand */
+        .hand-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4a4a6a;
+        }
+
+        .hand-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .hand {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .hand::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .hand::-webkit-scrollbar-track {
+            background: #1a1a2a;
+            border-radius: 10px;
+        }
+
+        .hand::-webkit-scrollbar-thumb {
+            background: #4a4a6a;
+            border-radius: 10px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2a5298 100%);
+            border: 3px solid #4a7ac0;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 180px;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(74, 122, 192, 0.6);
+            border-color: #5dade2;
+        }
+
+        .card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+
+        .card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .card-name {
+            color: #5dade2;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            padding-right: 40px;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            border: 2px solid #ffed4e;
+        }
+
+        .card-details {
+            font-size: 0.95em;
+            color: #b0b0b0;
+            line-height: 1.6;
+        }
+
+        .card-power {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Battle Log */
+        .log {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #4a4a6a;
+            padding: 15px;
+            border-radius: 10px;
+            height: 250px;
+            overflow-y: auto;
+            font-size: 0.95em;
+        }
+
+        .log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log::-webkit-scrollbar-track {
+            background: #1a1a2a;
+            border-radius: 10px;
+        }
+
+        .log::-webkit-scrollbar-thumb {
+            background: #4a4a6a;
+            border-radius: 10px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 6px 10px;
+            border-left: 3px solid #4a4a6a;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 3px;
+        }
+
+        .log-entry.damage {
+            color: #ff6b6b;
+            border-left-color: #ff6b6b;
+        }
+
+        .log-entry.heal {
+            color: #51cf66;
+            border-left-color: #51cf66;
+        }
+
+        .log-entry.poison {
+            color: #9b59b6;
+            border-left-color: #9b59b6;
+        }
+
+        .log-entry.info {
+            color: #5dade2;
+            border-left-color: #5dade2;
+        }
+
+        /* Buttons */
+        button {
+            background: linear-gradient(135deg, #4a7ac0 0%, #2a5298 100%);
+            color: white;
+            border: 2px solid #5dade2;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(74, 122, 192, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #5a8ad0 0%, #3a62a8 100%);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(74, 122, 192, 0.5);
+        }
+
+        button:disabled {
+            background: #2a2a4a;
+            border-color: #4a4a6a;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.5;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        /* Upgrade Screen */
+        .upgrade-list {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .upgrade-option {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 3px solid #ffd700;
+            padding: 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upgrade-option:hover {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 215, 0, 0.15) 100%);
+            transform: scale(1.03);
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .upgrade-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-desc {
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        /* Game Over */
+        .game-over {
+            text-align: center;
+            font-size: 3em;
+            padding: 60px;
+            font-weight: bold;
+        }
+
+        .game-over.win {
+            color: #51cf66;
+            text-shadow: 0 0 30px rgba(81, 207, 102, 0.8);
+        }
+
+        .game-over.lose {
+            color: #ff6b6b;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+        }
+
+        /* Input */
+        input[type="number"] {
+            background: #2a2a4a;
+            border: 2px solid #4a4a6a;
+            color: #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-family: inherit;
+            margin: 15px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #5dade2;
+            box-shadow: 0 0 20px rgba(93, 173, 226, 0.3);
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s;
+        }
+
+        .centered-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffd700;
+            margin: 30px 0;
+            font-size: 2em;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .battle-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ Monster Fighter ⚔️</h1>
+
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="game-screen active">
+            <div class="centered-content">
+                <h2>Choose Your Deck</h2>
+                <div id="deck-selection"></div>
+            </div>
+        </div>
+
+        <!-- Difficulty Screen -->
+        <div id="difficulty-screen" class="game-screen">
+            <div class="centered-content text-center">
+                <h2>Choose Difficulty</h2>
+                <p style="font-size: 1.2em; margin: 20px 0;">Select a difficulty level from 1 to 10</p>
+                <input type="number" id="difficulty-input" min="1" max="10" value="3">
+                <br>
+                <button onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="game-screen">
+            <div class="battle-layout">
+                <div class="battle-main">
+                    <!-- Player Status -->
+                    <div class="status-bar">
+                        <div class="status-header">
+                            <span>🛡️ Player Status</span>
+                            <span class="turn-indicator" id="turn-indicator"></span>
+                        </div>
+                        <div class="health-bar">
+                            <div class="health-text" id="health-text"></div>
+                            <div class="health-fill" id="player-health-bar"></div>
+                        </div>
+                        <div class="mana-display">
+                            <div class="mana-text" id="mana-text">Mana: 0/7</div>
+                            <div class="mana-orbs" id="mana-orbs"></div>
+                        </div>
+                        <div class="stat-row" id="player-stats"></div>
+                    </div>
+
+                    <!-- Enemies -->
+                    <div class="status-bar" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="status-header">⚔️ Enemies</div>
+                        <div class="enemies-container" id="enemies-list"></div>
+                    </div>
+
+                    <!-- Hand -->
+                    <div class="hand-container">
+                        <div class="hand-header">🃏 Your Hand</div>
+                        <div class="hand" id="hand"></div>
+                    </div>
+
+                    <div class="button-container">
+                        <button id="end-turn-btn" onclick="endTurn()">End Turn</button>
+                    </div>
+                </div>
+
+                <div class="battle-sidebar">
+                    <!-- Battle Log -->
+                    <div class="status-bar" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="status-header">📜 Battle Log</div>
+                        <div class="log" id="battle-log"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrade Screen -->
+        <div id="upgrade-screen" class="game-screen">
+            <div class="centered-content">
+                <h2>⭐ Choose an Upgrade ⭐</h2>
+                <div class="upgrade-list" id="upgrade-list"></div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="game-screen">
+            <div class="centered-content">
+                <div class="game-over" id="gameover-message"></div>
+                <div class="text-center">
+                    <button onclick="location.reload()">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            player: null,
+            deck: null,
+            hand: [],
+            enemies: [],
+            turn: 0,
+            currentLevel: 1,
+            maxLevel: 3,
+            upgrades: [],
+            selectedCard: null,
+            selectedTarget: null,
+            battleDeck: []
+        };
+
+        // Card definitions
+        const availableCards = {
+            "Fireball": { name: "Fireball", cost: 2, amount: 10, desc: "Deal 10 damage", types: ["Spell", "Ranged", "Basic"], target: "1", dmgType: ["Magic"] },
+            "Chain Lightning": { name: "Chain Lightning", cost: 2, amount: 3, desc: "Deal 3 damage to all", types: ["Spell", "Ranged", "Basic"], target: "all", dmgType: ["Magic"] },
+            "Poison Flask": { name: "Poison Flask", cost: 1, amount: 0, desc: "Apply poison", types: ["Poison"], target: "all", dmgType: [] },
+            "Heal": { name: "Heal", cost: 1, amount: 10, desc: "Heal 10 HP", types: ["Health"], target: "self", dmgType: [] },
+            "Cure": { name: "Cure", cost: 1, amount: 3, desc: "Heal 3 HP and cure poison", types: ["Health", "Poison"], target: "self", dmgType: [] },
+            "Arrow Shot": { name: "Arrow Shot", cost: 1, amount: 6, desc: "Deal 6 damage", types: ["Basic", "Ranged"], target: "1", dmgType: ["Physical"] },
+            "Arrow Barrage": { name: "Arrow Barrage", cost: 2, amount: 4, desc: "Deal 4 damage to all", types: ["Ranged"], target: "all", dmgType: ["Physical"] },
+            "Snipe Shot": { name: "Snipe Shot", cost: 4, amount: 20, desc: "Deal 20 damage", types: ["Special", "Ranged"], target: "1", dmgType: ["Physical"] },
+            "Sword Slash": { name: "Sword Slash", cost: 1, amount: 8, desc: "Deal 8 damage", types: ["Basic", "Physical"], target: "1", dmgType: ["Physical"] },
+            "Shield Bash": { name: "Shield Bash", cost: 2, amount: 6, desc: "Deal 6 damage", types: ["Basic", "Physical"], target: "1", dmgType: ["Physical"] }
+        };
+
+        // Deck definitions
+        const availableDecks = {
+            "Mage": { "Fireball": 3, "Chain Lightning": 2, "Poison Flask": 4, "Heal": 3, "Cure": 2 },
+            "Ranger": { "Arrow Shot": 6, "Arrow Barrage": 2, "Snipe Shot": 1, "Poison Flask": 2, "Heal": 2, "Cure": 1, "Chain Lightning": 1 },
+            "Fighter": { "Sword Slash": 6, "Shield Bash": 3, "Heal": 3, "Cure": 2 }
+        };
+
+        // Monster definitions
+        const monsters = [
+            [{ name: "Slime", health: 15, attack: 2, armor: 0, barrier: 0, effect: null, emoji: "🟢" }],
+            [
+                { name: "Sprite", health: 12, attack: 3, armor: 1, barrier: 0, effect: null, emoji: "🧚" },
+                { name: "Rat", health: 8, attack: 3, armor: 0, barrier: 0, effect: "Poison", emoji: "🐀" }
+            ],
+            [
+                { name: "Zombie", health: 30, attack: 4, armor: 0, barrier: 2, effect: "Poison", emoji: "🧟" },
+                { name: "Goblin", health: 20, attack: 5, armor: 2, barrier: 0, effect: null, emoji: "👺" }
+            ]
+        ];
+
+        // Upgrade definitions
+        const availableUpgrades = [
+            { name: "Ranged +1", desc: "Increases power of all Ranged Attacks by one (1)", effect: "ranged", time: "battle_start" },
+            { name: "Poison Weapons", desc: "Adds Poison effect to three (3) basic attacks", effect: "poison_weapons", time: "battle_start" },
+            { name: "Charge Shot", desc: "Increases power of one Ranged attack on hand by five (5) every two turns", effect: "charge_shot", time: "turn_start" },
+            { name: "Health +25", desc: "Gain 25 Max Health", effect: "health", time: "permanent" },
+            { name: "Starting Mana +1", desc: "Start each battle with 1 extra mana", effect: "starting_mana", time: "battle_start" }
+        ];
+
+        // Initialize menu
+        function initMenu() {
+            const deckSelection = document.getElementById('deck-selection');
+            Object.keys(availableDecks).forEach(deckName => {
+                const option = document.createElement('div');
+                option.className = 'menu-option';
+                option.innerHTML = `<h3 style="font-size: 1.5em;">${deckName}</h3><p>Click to select this deck</p>`;
+                option.onclick = () => selectDeck(deckName);
+                deckSelection.appendChild(option);
+            });
+        }
+
+        function selectDeck(deckName) {
+            gameState.deck = deckName;
+            addLog(`Selected ${deckName} deck`, 'info');
+            showScreen('difficulty-screen');
+        }
+
+        function startGame() {
+            const difficulty = parseInt(document.getElementById('difficulty-input').value);
+            if (difficulty < 1 || difficulty > 10) return;
+            
+            gameState.maxLevel = difficulty;
+            gameState.player = {
+                maxHealth: 50,
+                health: 50,
+                maxMana: 7,
+                mana: 1,
+                armor: 0,
+                barrier: 0,
+                poison: 0
+            };
+            
+            addLog(`Starting game with difficulty ${difficulty}`, 'info');
+            startLevel();
+        }
+
+        function startLevel() {
+            addLog(`=== Level ${gameState.currentLevel} ===`, 'info');
+            
+            // Build deck
+            gameState.battleDeck = [];
+            const deckConfig = availableDecks[gameState.deck];
+            Object.entries(deckConfig).forEach(([cardName, count]) => {
+                for (let i = 0; i < count; i++) {
+                    gameState.battleDeck.push({...availableCards[cardName]});
+                }
+            });
+            
+            // Shuffle deck
+            shuffleDeck();
+            
+            // Generate enemies
+            generateEnemies();
+            
+            // Apply battle start upgrades
+            applyUpgrades('battle_start');
+            
+            // Draw initial hand
+            gameState.hand = [];
+            for (let i = 0; i < 5; i++) {
+                drawCard();
+            }
+            
+            gameState.turn = 0;
+            showScreen('battle-screen');
+            startPlayerTurn();
+        }
+
+        function shuffleDeck() {
+            for (let i = gameState.battleDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameState.battleDeck[i], gameState.battleDeck[j]] = [gameState.battleDeck[j], gameState.battleDeck[i]];
+            }
+        }
+
+        function generateEnemies() {
+            gameState.enemies = [];
+            let totalLevel = 0;
+            
+            while (totalLevel < gameState.currentLevel) {
+                const remaining = gameState.currentLevel - totalLevel;
+                const level = Math.min(Math.floor(Math.random() * Math.min(monsters.length, remaining)) + 1, remaining);
+                const monsterPool = monsters[level - 1];
+                const monster = {...monsterPool[Math.floor(Math.random() * monsterPool.length)]};
+                monster.maxHealth = monster.health;
+                monster.poison = 0;
+                gameState.enemies.push(monster);
+                totalLevel += level;
+            }
+        }
+
+        function drawCard() {
+            if (gameState.battleDeck.length === 0) {
+                return;
+            }
+            const card = gameState.battleDeck.pop();
+            gameState.hand.push(card);
+        }
+
+        function startPlayerTurn() {
+            gameState.turn++;
+            addLog(`=== Turn ${gameState.turn} - Player Turn ===`, 'info');
+            
+            // Draw card (after turn 1)
+            if (gameState.turn > 1) {
+                drawCard();
+            }
+            
+            // Apply turn start upgrades
+            applyUpgrades('turn_start');
+            
+            // Apply poison damage
+            if (gameState.player.poison > 0) {
+                addLog(`You took ${gameState.player.poison} poison damage!`, 'poison');
+                gameState.player.health -= gameState.player.poison;
+                if (gameState.player.health <= 0) {
+                    gameState.player.health = 0;
+                    gameOver(false);
+                    return;
+                }
+            }
+            
+            updateBattleUI();
+        }
+
+        function playCard(cardIndex) {
+            const card = gameState.hand[cardIndex];
+            
+            if (!card || card.cost > gameState.player.mana) {
+                return;
+            }
+            
+            gameState.selectedCard = cardIndex;
+            
+            // Handle targeting
+            if (card.target === 'self') {
+                executeCard(cardIndex, null);
+            } else if (card.target === 'all') {
+                executeCard(cardIndex, 'all');
+            } else if (card.target === '1') {
+                if (gameState.enemies.length === 1) {
+                    executeCard(cardIndex, 0);
+                } else {
+                    addLog('Select a target enemy', 'info');
+                }
+            }
+        }
+
+        function selectEnemy(index) {
+            if (gameState.selectedCard !== null) {
+                const card = gameState.hand[gameState.selectedCard];
+                if (card && card.target === '1') {
+                    executeCard(gameState.selectedCard, index);
+                }
+            }
+        }
+
+        function executeCard(cardIndex, target) {
+            const card = gameState.hand[cardIndex];
+            
+            // Deduct mana
+            gameState.player.mana -= card.cost;
+            
+            // Execute effect
+            if (card.target === 'self') {
+                if (card.types.includes('Health')) {
+                    const healed = Math.min(card.amount, gameState.player.maxHealth - gameState.player.health);
+                    gameState.player.health = Math.min(gameState.player.health + card.amount, gameState.player.maxHealth);
+                    addLog(`You healed for ${healed} HP`, 'heal');
+                }
+                if (card.types.includes('Poison') && gameState.player.poison > 0) {
+                    const cured = Math.min(card.amount, gameState.player.poison);
+                    gameState.player.poison = Math.max(0, gameState.player.poison - card.amount);
+                    addLog(`You cured ${cured} poison`, 'heal');
+                }
+            } else if (card.target === 'all') {
+                gameState.enemies.forEach(enemy => {
+                    applyCardToEnemy(card, enemy);
+                });
+            } else if (typeof target === 'number') {
+                applyCardToEnemy(card, gameState.enemies[target]);
+            }
+            
+            // Remove card from hand
+            gameState.hand.splice(cardIndex, 1);
+            gameState.selectedCard = null;
+            
+            // Check for dead enemies
+            gameState.enemies = gameState.enemies.filter(enemy => enemy.health > 0);
+            
+            if (gameState.enemies.length === 0) {
+                levelComplete();
+                return;
+            }
+            
+            // End turn after playing card
+            setTimeout(() => {
+                endPlayerTurn();
+            }, 500);
+        }
+
+        function applyCardToEnemy(card, enemy) {
+            let damage = card.amount;
+            
+            if (card.dmgType.includes('Physical') && enemy.armor > 0) {
+                const reduced = Math.min(damage, enemy.armor);
+                damage = Math.max(0, damage - enemy.armor);
+                if (reduced > 0) addLog(`${enemy.name}'s armor reduced damage by ${reduced}`, 'info');
+            }
+            
+            if (card.dmgType.includes('Magic') && enemy.barrier > 0) {
+                const reduced = Math.min(damage, enemy.barrier);
+                damage = Math.max(0, damage - enemy.barrier);
+                if (reduced > 0) addLog(`${enemy.name}'s barrier reduced damage by ${reduced}`, 'info');
+            }
+            
+            if (damage > 0) {
+                enemy.health -= damage;
+                addLog(`${enemy.name} ${enemy.emoji} took ${damage} damage!`, 'damage');
+                
+                const enemyEl = document.getElementById(`enemy-${gameState.enemies.indexOf(enemy)}`);
+                if (enemyEl) {
+                    enemyEl.classList.add('shake');
+                    setTimeout(() => enemyEl.classList.remove('shake'), 400);
+                }
+            }
+            
+            if (card.types.includes('Poison')) {
+                enemy.poison++;
+                addLog(`${enemy.name} ${enemy.emoji} was poisoned!`, 'poison');
+            }
+            
+            if (enemy.health <= 0) {
+                enemy.health = 0;
+                addLog(`${enemy.name} ${enemy.emoji} defeated!`, 'damage');
+            }
+        }
+
+        function endPlayerTurn() {
+            // Restore mana
+            const manaGain = Math.floor(Math.random() * 3) + 1;
+            gameState.player.mana = Math.min(gameState.player.mana + manaGain, gameState.player.maxMana);
+            addLog(`Gained ${manaGain} mana`, 'info');
+            
+            updateBattleUI();
+            
+            setTimeout(() => {
+                enemyTurn();
+            }, 500);
+        }
+
+        function endTurn() {
+            endPlayerTurn();
+        }
+
+        function enemyTurn() {
+            addLog('=== Enemy Turn ===', 'info');
+            
+            let delay = 0;
+            gameState.enemies.forEach((enemy, index) => {
+                setTimeout(() => {
+                    // Apply poison
+                    if (enemy.poison > 0) {
+                        enemy.health -= enemy.poison;
+                        addLog(`${enemy.name} ${enemy.emoji} took ${enemy.poison} poison damage!`, 'poison');
+                        
+                        if (enemy.health <= 0) {
+                            enemy.health = 0;
+                            addLog(`${enemy.name} ${enemy.emoji} defeated by poison!`, 'damage');
+                            gameState.enemies = gameState.enemies.filter(e => e.health > 0);
+                            
+                            if (gameState.enemies.length === 0) {
+                                levelComplete();
+                                return;
+                            }
+                            updateBattleUI();
+                            return;
+                        }
+                    }
+                    
+                    // Enemy attacks
+                    let damage = enemy.attack;
+                    if (gameState.player.armor > 0) {
+                        const reduced = Math.min(damage, gameState.player.armor);
+                        damage = Math.max(0, damage - gameState.player.armor);
+                        if (reduced > 0) addLog(`Your armor reduced damage by ${reduced}`, 'info');
+                    }
+                    
+                    gameState.player.health -= damage;
+                    addLog(`${enemy.name} ${enemy.emoji} attacks for ${damage} damage!`, 'damage');
+                    
+                    if (enemy.effect === 'Poison') {
+                        gameState.player.poison++;
+                        addLog(`${enemy.name} ${enemy.emoji} poisoned you!`, 'poison');
+                    }
+                    
+                    if (gameState.player.health <= 0) {
+                        gameState.player.health = 0;
+                        gameOver(false);
+                        return;
+                    }
+                    
+                    updateBattleUI();
+                    
+                    if (index === gameState.enemies.length - 1) {
+                        setTimeout(() => {
+                            startPlayerTurn();
+                        }, 1000);
+                    }
+                }, delay);
+                delay += 1000;
+            });
+        }
+
+        function levelComplete() {
+            addLog('=== LEVEL COMPLETE! ===', 'heal');
+            if (gameState.currentLevel >= gameState.maxLevel) {
+                gameOver(true);
+            } else {
+                gameState.currentLevel++;
+                resetPlayer();
+                setTimeout(() => {
+                    showUpgradeScreen();
+                }, 1500);
+            }
+        }
+
+        function resetPlayer() {
+            gameState.player.health = gameState.player.maxHealth;
+            gameState.player.mana = 1;
+            gameState.player.armor = 0;
+            gameState.player.barrier = 0;
+            gameState.player.poison = 0;
+        }
+
+        function showUpgradeScreen() {
+            const upgradeList = document.getElementById('upgrade-list');
+            upgradeList.innerHTML = '';
+            
+            const shuffled = [...availableUpgrades].sort(() => Math.random() - 0.5).slice(0, 5);
+            
+            shuffled.forEach(upgrade => {
+                const option = document.createElement('div');
+                option.className = 'upgrade-option';
+                option.innerHTML = `
+                    <div class="upgrade-name">${upgrade.name}</div>
+                    <div class="upgrade-desc">${upgrade.desc}</div>
+                `;
+                option.onclick = () => selectUpgrade(upgrade);
+                upgradeList.appendChild(option);
+            });
+            
+            showScreen('upgrade-screen');
+        }
+
+        function selectUpgrade(upgrade) {
+            gameState.upgrades.push(upgrade);
+            
+            // Apply permanent upgrades immediately
+            if (upgrade.time === 'permanent' && upgrade.effect === 'health') {
+                gameState.player.maxHealth += 25;
+                gameState.player.health = gameState.player.maxHealth;
+            }
+            
+            addLog(`Selected upgrade: ${upgrade.name}`, 'heal');
+            startLevel();
+        }
+
+        function applyUpgrades(time) {
+            gameState.upgrades.forEach(upgrade => {
+                if (upgrade.time === time) {
+                    if (upgrade.effect === 'ranged') {
+                        gameState.battleDeck.forEach(card => {
+                            if (card.types.includes('Ranged')) card.amount++;
+                        });
+                        gameState.hand.forEach(card => {
+                            if (card.types.includes('Ranged')) card.amount++;
+                        });
+                    } else if (upgrade.effect === 'poison_weapons') {
+                        let count = 0;
+                        gameState.battleDeck.forEach(card => {
+                            if (card.types.includes('Basic') && count < 3) {
+                                if (!card.types.includes('Poison')) {
+                                    card.types.push('Poison');
+                                    count++;
+                                }
+                            }
+                        });
+                    } else if (upgrade.effect === 'charge_shot') {
+                        if (gameState.turn % 2 === 0) {
+                            const rangedCard = gameState.hand.find(c => c.types.includes('Ranged'));
+                            if (rangedCard) {
+                                rangedCard.amount += 5;
+                                addLog('⚡ Charge Shot activated!', 'info');
+                            }
+                        }
+                    } else if (upgrade.effect === 'starting_mana') {
+                        gameState.player.mana++;
+                        addLog('✨ Starting Mana +1', 'info');
+                    }
+                }
+            });
+        }
+
+        function gameOver(won) {
+            const message = document.getElementById('gameover-message');
+            if (won) {
+                message.textContent = '🎉 Congratulations! You Won! 🎉';
+                message.className = 'game-over win';
+            } else {
+                message.textContent = '💀 Game Over 💀';
+                message.className = 'game-over lose';
+            }
+            setTimeout(() => {
+                showScreen('gameover-screen');
+            }, 1000);
+        }
+
+        function updateBattleUI() {
+            // Update turn indicator
+            document.getElementById('turn-indicator').textContent = `Turn ${gameState.turn}`;
+            
+            // Update health text and bar
+            document.getElementById('health-text').textContent = `${gameState.player.health}/${gameState.player.maxHealth} HP`;
+            const healthPercent = (gameState.player.health / gameState.player.maxHealth) * 100;
+            document.getElementById('player-health-bar').style.width = healthPercent + '%';
+            
+            // Update mana text
+            document.getElementById('mana-text').textContent = `Mana: ${gameState.player.mana}/${gameState.player.maxMana}`;
+            
+            // Update mana orbs
+            let manaHTML = '';
+            for (let i = 0; i < gameState.player.maxMana; i++) {
+                manaHTML += `<span class="mana-orb ${i < gameState.player.mana ? '' : 'empty'}"></span>`;
+            }
+            document.getElementById('mana-orbs').innerHTML = manaHTML;
+            
+            // Update other stats
+            const poisonStr = gameState.player.poison > 0 ? ` | 🧪 Poisoned: ${gameState.player.poison}` : '';
+            document.getElementById('player-stats').innerHTML = `
+                <span>🛡️ Armor: ${gameState.player.armor}</span>
+                <span>✨ Barrier: ${gameState.player.barrier}${poisonStr}</span>
+            `;
+            
+            // Update enemies
+            const enemiesList = document.getElementById('enemies-list');
+            enemiesList.innerHTML = '';
+            gameState.enemies.forEach((enemy, index) => {
+                const poisonStr = enemy.poison > 0 ? ` | 🧪 ${enemy.poison}` : '';
+                const div = document.createElement('div');
+                div.className = 'enemy';
+                div.id = `enemy-${index}`;
+                div.innerHTML = `
+                    <div class="enemy-name">${enemy.name} ${enemy.emoji}</div>
+                    <div class="health-bar">
+                        <div class="health-text">${enemy.health}/${enemy.maxHealth} HP</div>
+                        <div class="health-fill" style="width: ${(enemy.health / enemy.maxHealth) * 100}%"></div>
+                    </div>
+                    <div class="enemy-stats">
+                        <div>⚔️ Attack: ${enemy.attack}</div>
+                        <div>🛡️ Armor: ${enemy.armor}</div>
+                        <div>✨ Barrier: ${enemy.barrier}</div>
+                        <div>${poisonStr}</div>
+                    </div>
+                `;
+                div.onclick = () => selectEnemy(index);
+                enemiesList.appendChild(div);
+            });
+            
+            // Update hand
+            const hand = document.getElementById('hand');
+            hand.innerHTML = '';
+            gameState.hand.forEach((card, index) => {
+                const canPlay = card.cost <= gameState.player.mana;
+                const div = document.createElement('div');
+                div.className = `card ${canPlay ? '' : 'disabled'}`;
+                div.innerHTML = `
+                    <div class="card-cost">${card.cost}</div>
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-details">
+                        <div class="card-power">⚡ Power: ${card.amount}</div>
+                        <div style="margin: 8px 0;">${card.desc}</div>
+                        <div>🎯 Target: ${card.target === 'self' ? 'Self' : card.target === 'all' ? 'All Enemies' : 'Single Enemy'}</div>
+                        <div style="font-size: 0.85em; color: #888; margin-top: 5px;">${card.types.join(', ')}</div>
+                    </div>
+                `;
+                if (canPlay) {
+                    div.onclick = () => playCard(index);
+                }
+                hand.appendChild(div);
+            });
+        }
+
+        function addLog(message, type) {
+            const log = document.getElementById('battle-log');
+            if (!log) return;
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Initialize game
+        initMenu();
+    </script>
+</body>
+</html>
